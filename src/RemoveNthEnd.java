@@ -11,8 +11,17 @@ public class RemoveNthEnd {
             end = end.next;
         }
 
-        while (end != null) {
+        if (end == null) {
+            return head.next;
+        }
+
+        while (true) {
             end = end.next;
+
+            if (end == null) {
+                break;
+            }
+
             middle = middle.next;
         }
 
