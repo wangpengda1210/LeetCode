@@ -28,20 +28,17 @@ class LRUCache {
     }
 
     private void moveToHead(Node node) {
-        if (head != node) {
-            if (tail == node) {
+        if (node != head) {
+            if (node == tail) {
                 tail = tail.prev;
             }
-
-            head.next = node.next;
+            Node temp = node.prev;
+            temp.next = node.next;
             if (node.next != null) {
-                node.next.prev = node.prev;
+                node.next.prev = temp;
             }
-
             node.next = head;
             head.prev = node;
-            node.prev = null;
-
             head = node;
         }
     }
@@ -82,6 +79,7 @@ class LRUCache {
 
             if (size == 2) {
                 tail = head;
+                tail.prev = null;
             } else {
                 tail = tail.prev;
             }
