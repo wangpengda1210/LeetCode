@@ -14,72 +14,32 @@ public class DeleteNodeInBST {
     }
 
     public TreeNode deleteNode(TreeNode root, int key) {
-        TreeNode parent = root;
-        TreeNode curr = root;
-
-        while (curr != null) {
-            if (curr.val == key) {
-                break;
-            }
-
-            if (curr.val > key) {
-                parent = curr;
-                curr = curr.left;
-            } else {
-                parent = curr;
-                curr = curr.right;
-            }
+        if (root == null) {
+            return null;
         }
 
-        if (curr == null) {
-            return root;
-        }
-
-        return delete(root, parent, curr);
-    }
-
-    private TreeNode delete(TreeNode root, TreeNode parent, TreeNode curr) {
-        if (curr.left == null && curr.right == null) {
-            if (curr == root) {
-                return null;
-            }
-
-            if (parent.right == curr) {
-                parent.right = null;
-            } else {
-                parent.left = null;
-            }
-        } else if (curr.left == null) {
-            if (curr == root) {
-                return curr.right;
-            }
-
-            if (parent.right == curr) {
-                parent.right = curr.right;
-            } else {
-                parent.left = curr.right;
-            }
-        } else if (curr.right == null) {
-            if (curr == root) {
-                return curr.left;
-            }
-
-            if (parent.right == curr) {
-                parent.right = curr.left;
-            } else {
-                parent.left = curr.left;
-            }
+        if (root.val > key) {
+            root.left = deleteNode(root.left, key);
+        } else if (root.val < key) {
+            root.right = deleteNode(root.right, key);
         } else {
-            TreeNode minNode = curr.right;
-            TreeNode minParent = curr;
-
-            while (minNode.left != null) {
-                minParent = minNode;
-                minNode = minNode.left;
+            if (root.left == null && root.right == null) {
+                root = null;
+            } else if (root.left != null) {
+                TreeNode curr = root.left;
+                while (curr.right != null) {
+                    curr = curr.right;
+                }
+                root.val = curr.val;
+                root.left = deleteNode(root.left, root.val);
+            } else {
+                TreeNode curr = root.right;
+                while (curr.left != null) {
+                    curr = curr.left;
+                }
+                root.val = curr.val;
+                root.right = deleteNode(root.right, root.val);
             }
-
-            curr.val = minNode.val;
-            delete(root, minParent, minNode);
         }
 
         return root;
