@@ -1,4 +1,6 @@
 import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class NearestExitFromEntranceInMaze {
@@ -7,32 +9,43 @@ public class NearestExitFromEntranceInMaze {
     public int nearestExit(char[][] maze, int[] entrance) {
         int m = maze.length;
         int n = maze[0].length;
-        int[][] distance = new int[m][n];
-        Queue<int[]> cells = new ArrayDeque<>();
 
-        distance[entrance[0]][entrance[1]] = 0;
+        Queue<int[]> cells = new LinkedList<>();
+
         cells.add(entrance);
+        maze[entrance[0]][entrance[1]] = '!';
+
+        int distance = 0;
+        int cellsRemain = 1;
 
         while (!cells.isEmpty()) {
-            int[] cell = cells.poll();
-            int neighbourDistance = distance[cell[0]][cell[1]] + 1;
+            int[] next = cells.poll();
+            cellsRemain--;
 
-            for (int[] neighbour : directions) {
-                int row = cell[0] + neighbour[0];
-                int col = cell[1] + neighbour[1];
+            int row = next[0];
+            int col = next[1];
 
-                if (row < 0 || row >= m || col < 0 || col >= n ||
-                        maze[row][col] != '.') {
+            for (int[] dir : directions) {
+                int neiRow = row + dir[0];
+                int neiCol = col + dir[1];
+
+                if (neiRow < 0 || neiRow >= m || neiCol < 0 || neiCol >= n) {
                     continue;
                 }
 
-                cells.add(new int[] {row, col});
-                distance[row][col] = neighbourDistance;
-                maze[row][col] = '-';
+                if (maze[neiRow][neiCol] == '.') {
+                    if (neiRow == 0 || neiRow == m - 1 || neiCol == 0 || neiCol == n - 1) {
+                        return distance + 1;
+                    }
 
-                if (row == 0 || row == m - 1 || col == 0 || col == n - 1) {
-                    return neighbourDistance;
+                    cells.add(new int[] { neiRow, neiCol });
+                    maze[neiRow][neiCol] = '!';
                 }
+            }
+
+            if (cellsRemain == 0) {
+                distance++;
+                cellsRemain = cells.size();
             }
         }
 
