@@ -1,103 +1,79 @@
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 
 public class NumberOfIslandsII {
-    private class Pair<T, U> {
-        T t;
-        U u;
-
-        public Pair(T t, U u) {
-            this.t = t;
-            this.u = u;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Pair<?,?>)) {
-                return false;
-            }
-            Pair p = (Pair) obj;
-
-            return p.u.equals(this.u) && p.t.equals(this.t);
-        }
-
-        @Override
-        public int hashCode() {
-            return t.hashCode() + u.hashCode();
-        }
-    }
-
-    int[][] dirs = new int[][] {{ -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }};
-
     public List<Integer> numIslands2(int m, int n, int[][] positions) {
-        int[] parents = new int[positions.length];
-        HashMap<Pair<Integer, Integer>, Integer> indices = new HashMap<>();
+        int[] parent = new int[m * n];
+        int[] size = new int[m * n];
+        int[][] dirs = new int[][] {{ -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }};
+        List<Integer> ans = new ArrayList<>();
 
-        for (int i = 0; i < parents.length; i++) {
+        Arrays.fill(parent, -1);
+
+        for (int i = 0; i < positions.length; i++) {
             int[] position = positions[i];
+            int numIslands = i == 0 ? 0 : ans.get(i - 1);
+            int currIndex = posToIndex(position, n);
 
-            parents[i] = i;
-            Pair<Integer, Integer> newPair = new Pair<>(position[0], position[1]);
-            if (!indices.containsKey(newPair)) {
-                indices.put(newPair, i);
+            if (parent[currIndex] >= 0) {
+                ans.add(numIslands);
+                continue;
             }
-        }
 
-        List<Integer> result = new ArrayList<>();
-        result.add(1);
-        for (int i = 1; i < positions.length; i++) {
-            if (i == indices.get(new Pair<>(positions[i][0], positions[i][1]))) {
-                int numIslands = result.get(i - 1);
+            numIslands++;
+            size[currIndex] = 1;
+            parent[currIndex] = currIndex;
 
-                List<Integer> nei = new ArrayList<>();
-                HashSet<Integer> neiParents = new HashSet<>();
-                for (int[] dir : dirs) {
-                    int newM = positions[i][0] + dir[0];
-                    int newN = positions[i][1] + dir[1];
+            for (int[] dir : dirs) {
+                int newX = position[0] + dir[0];
+                int newY = position[1] + dir[1];
 
-                    if (newM < 0 || newM >= m || newN < 0 || newN >= n) {
-                        continue;
-                    }
-
-                    Pair<Integer, Integer> neiPair = new Pair<>(newM, newN);
-                    if (indices.containsKey(neiPair) && indices.get(neiPair) < i) {
-                        int neiIndex = indices.get(neiPair);
-                        nei.add(neiIndex);
-                        neiParents.add(findParent(parents, neiIndex));
-                    }
+                if (newX < 0 || newX >= m || newY < 0 || newY >= n) {
+                    continue;
                 }
 
-                for (Integer integer : nei) {
-                    union(parents, i, integer);
+                int neighborIndex = posToIndex(new int[] { newX, newY }, n);
+                if (parent[neighborIndex] >= 0) {
+                    numIslands -= union(currIndex, neighborIndex, parent, size);
                 }
-                numIslands -= neiParents.size() - 1;
-
-                result.add(numIslands);
-            } else {
-                result.add(result.get(i - 1));
             }
+
+            ans.add(numIslands);
         }
 
-        return result;
+        return ans;
     }
 
-    private void union(int[] parents, int i, int j) {
-        int iParent = findParent(parents, i);
-        int jParent = findParent(parents, j);
-
-        if (iParent != jParent) {
-            parents[jParent] = iParent;
-        }
+    private int posToIndex(int[] pos, int n) {
+        return pos[0] * n + pos[1];
     }
 
-    private int findParent(int[] parents, int curr) {
-        while (curr != parents[curr]) {
-            parents[curr] = parents[parents[curr]];
-            curr = parents[curr];
+    private int union(int i, int j, int[] parent, int[] size) {
+        int iParent = find(i, parent);
+        int jParent = find(j, parent);
+
+        if (iParent == jParent) {
+            return 0;
         }
 
-        return curr;
+        if (size[i] > size[j]) {
+            parent[jParent] = iParent;
+            size[iParent] += size[jParent];
+        } else {
+            parent[iParent] = jParent;
+            size[jParent] += size[iParent];
+        }
+
+        return 1;
+    }
+
+    private int find(int i, int[] parent) {
+        while (i != parent[i]) {
+            parent[i] = parent[parent[i]];
+            i = parent[i];
+        }
+
+        return i;
     }
 }
