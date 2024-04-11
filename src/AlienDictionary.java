@@ -1,40 +1,44 @@
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 
 public class AlienDictionary {
     public String alienOrder(String[] words) {
-        HashMap<Character, ArrayList<Character>> nextList = new HashMap<>();
+        List<Character>[] graph = new List[26];
+
         for (String word : words) {
             for (char c : word.toCharArray()) {
-                if (!nextList.containsKey(c)) {
-                    nextList.put(c, new ArrayList<>());
+                if (graph[c - 'a'] == null) {
+                    graph[c - 'a'] = new ArrayList<>();
                 }
             }
         }
 
         for (int i = 0; i < words.length - 1; i++) {
-            String word1 = words[i];
-            String word2 = words[i + 1];
+            String curr = words[i];
+            String next = words[i + 1];
 
-            if (word1.length() > word2.length() && word1.startsWith(word2)) {
+            if (curr.startsWith(next) && curr.length() > next.length()) {
                 return "";
             }
 
-            for (int j = 0; j < Math.min(word1.length(), word2.length()); j++) {
-                if (word1.charAt(j) != word2.charAt(j)) {
-                    nextList.get(word1.charAt(j)).add(word2.charAt(j));
+            for (int j = 0; j < Math.min(curr.length(), next.length()); j++) {
+                if (curr.charAt(j) != next.charAt(j)) {
+                    graph[curr.charAt(j) - 'a'].add(next.charAt(j));
                     break;
                 }
             }
         }
 
-        HashSet<Character> seen = new HashSet<>();
-        HashSet<Character> visited = new HashSet<>();
+        boolean[] seen = new boolean[26];
+        boolean[] visited = new boolean[26];
         StringBuilder sb = new StringBuilder();
 
-        for (char c : nextList.keySet()) {
-            if (!dfs(c, nextList, seen, visited, sb)) {
+        for (char c = 'a'; c <= 'z'; c++) {
+            if (graph[c - 'a'] == null) {
+                continue;
+            }
+
+            if (!dfs(graph, seen, visited, sb, c)) {
                 return "";
             }
         }
@@ -42,29 +46,24 @@ public class AlienDictionary {
         return sb.reverse().toString();
     }
 
-    private boolean dfs(char curr, HashMap<Character, ArrayList<Character>> nextList, HashSet<Character> seen, HashSet<Character> visited, StringBuilder sb) {
-        if (visited.contains(curr)) {
+    private boolean dfs(List<Character>[] graph, boolean[] seen, boolean[] visited, StringBuilder sb, char c) {
+        if (visited[c - 'a']) {
             return true;
         }
 
-        if (seen.contains(curr)) {
+        if (seen[c - 'a']) {
             return false;
         }
 
-        seen.add(curr);
-        if (!nextList.containsKey(curr)) {
-            visited.add(curr);
-            return true;
-        }
-
-        for (char next : nextList.get(curr)) {
-            if (!dfs(next, nextList, seen, visited, sb)) {
+        seen[c - 'a'] = true;
+        for (char next : graph[c - 'a']) {
+            if (!dfs(graph, seen, visited, sb, next)) {
                 return false;
             }
         }
+        visited[c - 'a'] = true;
 
-        visited.add(curr);
-        sb.append(curr);
+        sb.append(c);
         return true;
     }
 }
