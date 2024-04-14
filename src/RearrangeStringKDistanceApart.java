@@ -1,45 +1,67 @@
 import java.util.*;
 
 public class RearrangeStringKDistanceApart {
+    static class Pair<T, S> {
+        T t;
+        S s;
+
+        public Pair(T t, S s) {
+            this.t = t;
+            this.s = s;
+        }
+
+        public T getKey() {
+            return t;
+        }
+
+        public S getValue() {
+            return s;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Pair)) {
+                return false;
+            } else {
+                return this.t.equals(((Pair<?, ?>) obj).t) && this.s.equals(((Pair<?, ?>) obj).s);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return t.hashCode() + s.hashCode();
+        }
+    }
+
     public String rearrangeString(String s, int k) {
-        StringBuilder rearranged = new StringBuilder();
-        //count frequency of each char
-        Map<Character, Integer> map = new HashMap<>();
+        HashMap<Character, Integer> count = new HashMap<>();
         for (char c : s.toCharArray()) {
-            if (!map.containsKey(c)) {
-                map.put(c, 0);
-            }
-            map.put(c, map.get(c) + 1);
+            count.put(c, count.getOrDefault(c, 0) + 1);
         }
 
-        //construct a max heap using self-defined comparator, which holds all Map entries, Java is quite verbose
-        Queue<Map.Entry<Character, Integer>> maxHeap = new PriorityQueue<>(new Comparator<Map.Entry<Character, Integer>>() {
-            public int compare(Map.Entry<Character, Integer> entry1, Map.Entry<Character, Integer> entry2) {
-                return entry2.getValue() - entry1.getValue();
-            }
-        });
+        PriorityQueue<Pair<Character, Integer>> nextList = new PriorityQueue<>((a, b) -> b.getValue() - a.getValue());
+        Queue<Character> waitList = new LinkedList<>();
 
-        Queue<Map.Entry<Character, Integer>> waitQueue = new LinkedList<>();
-        maxHeap.addAll(map.entrySet());
+        for (char c : count.keySet()) {
+            nextList.add(new Pair<>(c, count.get(c)));
+        }
 
-        while (!maxHeap.isEmpty()) {
+        StringBuilder sb = new StringBuilder();
+        while (!nextList.isEmpty()) {
+            Pair<Character, Integer> next = nextList.poll();
+            sb.append(next.getKey());
+            count.put(next.getKey(), next.getValue() - 1);
+            waitList.add(next.getKey());
 
-            Map.Entry<Character, Integer> current = maxHeap.poll();
-            rearranged.append(current.getKey());
-            current.setValue(current.getValue() - 1);
-            waitQueue.offer(current);
-
-            if (waitQueue.size() < k) { // intial k-1 chars, waitQueue not full yet
-                continue;
-            }
-            // release from waitQueue if char is already k apart
-            Map.Entry<Character, Integer> front = waitQueue.poll();
-            //note that char with 0 count still needs to be placed in waitQueue as a place holder
-            if (front.getValue() > 0) {
-                maxHeap.offer(front);
+            while (!waitList.isEmpty() && waitList.size() >= k) {
+                char nextWait = waitList.poll();
+                if (count.get(nextWait) > 0) {
+                    nextList.add(new Pair<>(nextWait, count.get(nextWait)));
+                }
             }
         }
 
-        return rearranged.length() == s.length() ? rearranged.toString() : "";
+        String ans = sb.toString();
+        return ans.length() == s.length() ? ans : "";
     }
 }
