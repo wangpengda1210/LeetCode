@@ -1,38 +1,37 @@
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 public class ZigzagIterator {
-    Queue<Integer> nums = new LinkedList<>();
+    Queue<int[]> nums;
+    List<Integer> v1;
+    List<Integer> v2;
 
     public ZigzagIterator(List<Integer> v1, List<Integer> v2) {
-        int p1 = 0;
-        int p2 = 0;
-
-        while (p1 < v1.size() && p2 < v2.size()) {
-            nums.offer(v1.get(p1));
-            nums.offer(v2.get(p2));
-            p1++;
-            p2++;
-        }
-
-        while (p1 < v1.size()) {
-            nums.offer(v1.get(p1));
-            p1++;
-        }
-
-        while (p2 < v2.size()) {
-            nums.offer(v2.get(p2));
-            p2++;
-        }
+        this.v1 = v1;
+        this.v2 = v2;
+        this.nums = new LinkedList<>();
+        this.addNumber(new int[] { 0, 0, 1 });
+        this.addNumber(new int[] { 0, 0, 2 });
     }
 
     public int next() {
-        return nums.poll();
+        int[] next = nums.poll();
+        addNumber(next);
+        return next[0];
     }
 
     public boolean hasNext() {
         return !nums.isEmpty();
+    }
+
+    private void addNumber(int[] prev) {
+        int pos = prev[1];
+        int from = prev[2];
+        if (from == 1 && pos < v1.size()) {
+            nums.add(new int[] { v1.get(pos), pos + 1, 1 });
+        } else if (from == 2 && pos < v2.size()) {
+            nums.add(new int[] { v2.get(pos), pos + 1, 2 });
+        }
     }
 }
