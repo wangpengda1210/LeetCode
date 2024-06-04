@@ -1,16 +1,37 @@
-import java.util.Arrays;
+import java.util.HashSet;
 
 public class CanMakeArithmeticProgressionFromSequence {
     public boolean canMakeArithmeticProgression(int[] arr) {
-        Arrays.sort(arr);
-        int diff = arr[1] - arr[0];
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
 
-        for (int i = 2; i < arr.length; i++) {
-            if (arr[i] - arr[i - 1] != diff) {
-                return false;
+        for (int num : arr) {
+            if (num > max) {
+                max = num;
+            }
+            if (num < min) {
+                min = num;
             }
         }
 
-        return true;
+        if ((max - min) % (arr.length - 1) != 0) {
+            return false;
+        }
+
+        int diff = (max - min) / (arr.length - 1);
+
+        if (diff == 0) {
+            return true;
+        }
+
+        HashSet<Integer> set = new HashSet<>();
+        for (int num : arr) {
+            if ((num - min) % diff != 0) {
+                return false;
+            }
+            set.add(num);
+        }
+
+        return set.size() == arr.length;
     }
 }
