@@ -1,70 +1,36 @@
+import java.util.Arrays;
+
+/**
+ * Given two non-negative integers num1 and num2 represented as strings, return the product of num1 and num2, also represented as a string.
+ * <p>
+ * Note: You must not use any built-in BigInteger library or convert the inputs to integer directly.
+ */
+
 public class MultiplyStrings {
     public String multiply(String num1, String num2) {
-        String result = "0";
+        StringBuilder str1 = new StringBuilder(num1).reverse();
+        StringBuilder str2 = new StringBuilder(num2).reverse();
 
-        for (int i = num2.length() - 1; i >= 0; i--) {
-            int number = num2.charAt(i) - '0';
+        char[] ans = new char[num1.length() + num2.length()];
+        Arrays.fill(ans, '0');
 
-            StringBuilder sb = new StringBuilder(num1);
-            sb.reverse();
-
-            StringBuilder mulResult = new StringBuilder();
-            int offset = 0;
-
-            for (int j = 0; j < sb.length(); j++) {
-                int multiple = number * (sb.charAt(j) - '0') + offset;
-                mulResult.append(multiple % 10);
-                offset = multiple / 10;
-            }
-
-            if (offset > 0) {
-                mulResult.append(offset);
-            }
-
-            for (int j = 0; j < num2.length() - i - 1; j++) {
-                mulResult.insert(0, 0);
-            }
-
-            result = addStrings(result, mulResult.reverse().toString());
-        }
-
-        if (result.length() > 1 && result.charAt(0) == '0') {
-            return "0";
-        }
-
-        return result;
-    }
-
-    public String addStrings(String num1, String num2) {
-        StringBuilder sb1 = new StringBuilder(num1);
-        StringBuilder sb2 = new StringBuilder(num2);
-
-        if (num1.length() > num2.length()) {
-            for (int i = 0; i < num1.length() - num2.length(); i++) {
-                sb2.insert(0, '0');
-            }
-        } else {
-            for (int i = 0; i < num2.length() - num1.length(); i++) {
-                sb1.insert(0, '0');
+        for (int i = 0; i < str2.length(); i++) {
+            for (int j = 0; j < str1.length(); j++) {
+                int mul = (str1.charAt(j) - '0') * (str2.charAt(i) - '0') + (ans[i + j] - '0');
+                ans[i + j] = (char) ('0' + mul % 10);
+                ans[i + j + 1] = (char) (((ans[i + j + 1] - '0') + mul / 10) + '0');
             }
         }
 
-        sb1.reverse();
-        sb2.reverse();
-
-        StringBuilder result = new StringBuilder();
-        int offset = 0;
-
-        for (int i = 0; i < sb1.length(); i++) {
-            int addition = Integer.parseInt(String.valueOf(sb1.charAt(i))) + Integer.parseInt(String.valueOf(sb2.charAt(i))) + offset;
-            result.append(addition % 10);
-            offset = addition / 10;
+        String mulStr = new StringBuilder(String.valueOf(ans)).reverse().toString();
+        int firstNonZero = -1;
+        for (int i = 0; i < mulStr.length(); i++) {
+            if (mulStr.charAt(i) != '0') {
+                firstNonZero = i;
+                break;
+            }
         }
 
-        if (offset > 0) {
-            result.append(offset);
-        }
-
-        return result.reverse().toString();
+        return firstNonZero == -1 ? "0" : mulStr.substring(firstNonZero);
     }
 }
