@@ -1,5 +1,5 @@
 public class SplitArrayLargestSum {
-    public int splitArray(int[] nums, int m) {
+    public int splitArrayDP(int[] nums, int m) {
         int n = nums.length;
         int[] preSum = new int[n + 1];
 
@@ -31,5 +31,39 @@ public class SplitArrayLargestSum {
         }
 
         return minLargest[0][m];
+    }
+
+    // BS approach
+    public int splitArray(int[] nums, int k) {
+        int start = 0;
+        int end = 0;
+        for (int num : nums) {
+            start = Math.max(start, num);
+            end += num;
+        }
+
+        while (start < end) {
+            int mid = start + (end - start) / 2;
+            if (cuts(nums, mid) <= k) {
+                end = mid;
+            } else {
+                start = mid + 1;
+            }
+        }
+
+        return start;
+    }
+
+    private int cuts(int[] nums, int maxSize) {
+        int cut = 1;
+        int cutSum = 0;
+        for (int num : nums) {
+            if (cutSum + num > maxSize) {
+                cut++;
+                cutSum = 0;
+            }
+            cutSum += num;
+        }
+        return cut;
     }
 }
