@@ -3,54 +3,41 @@ import java.util.Comparator;
 
 public class MaximumProfitInJobScheduling {
     public int jobScheduling(int[] startTime, int[] endTime, int[] profit) {
-        ArrayList<ArrayList<Integer>> jobs = new ArrayList<>();
-
+        ArrayList<int[]> times = new ArrayList<>();
         for (int i = 0; i < startTime.length; i++) {
-            ArrayList<Integer> job = new ArrayList<>();
-            job.add(startTime[i]);
-            job.add(endTime[i]);
-            job.add(profit[i]);
-            jobs.add(job);
+            times.add(new int[] { startTime[i], endTime[i], profit[i] });
         }
 
-        jobs.sort(Comparator.comparingInt(i -> i.get(0)));
+        times.sort(Comparator.comparingInt(i -> i[0]));
 
-        int[] maxProfits = new int[startTime.length];
-        maxProfits[startTime.length - 1] = jobs.get(startTime.length - 1).get(2);
+        int[] maxProfit = new int[startTime.length];
+        maxProfit[startTime.length - 1] = times.get(startTime.length - 1)[2];
 
         for (int i = startTime.length - 2; i >= 0; i--) {
-            int nextJob = findNextJob(jobs, i);
-
-            int currProfit = 0;
-            if (nextJob >= startTime.length) {
-                currProfit = jobs.get(i).get(2);
+            int nextIndex = findNext(i + 1, times.get(i)[1], times);
+            if (nextIndex == times.size()) {
+                maxProfit[i] = Math.max(times.get(i)[2], maxProfit[i + 1]);
             } else {
-                currProfit = jobs.get(i).get(2) + maxProfits[nextJob];
+                maxProfit[i] = Math.max(times.get(i)[2] + maxProfit[nextIndex], maxProfit[i + 1]);
             }
-
-            maxProfits[i] = Math.max(maxProfits[i + 1], currProfit);
         }
 
-        return maxProfits[0];
+        return maxProfit[0];
     }
 
-    private int findNextJob(ArrayList<ArrayList<Integer>> jobs, int lastIndex) {
-        int lastEndTime = jobs.get(lastIndex).get(1);
+    private int findNext(int startIndex, int time, ArrayList<int[]> times) {
+        int start = startIndex;
+        int end = times.size();
 
-        int start = lastIndex + 1;
-        int end = jobs.size() - 1;
-        int nextJob = jobs.size();
-
-        while (start <= end) {
-            int mid = (start + end) / 2;
-            if (jobs.get(mid).get(0) >= lastEndTime) {
-                nextJob = mid;
-                end = mid - 1;
+        while (start < end) {
+            int mid = start + (end - start) / 2;
+            if (times.get(mid)[0] >= time) {
+                end = mid;
             } else {
                 start = mid + 1;
             }
         }
 
-        return nextJob;
+        return start;
     }
 }
