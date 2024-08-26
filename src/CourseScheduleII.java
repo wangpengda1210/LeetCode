@@ -1,56 +1,38 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class CourseScheduleII {
     public int[] findOrder(int numCourses, int[][] prerequisites) {
-        HashMap<Integer, List<Integer>> graph = new HashMap<>();
-        for (int[] prerequisite : prerequisites) {
-            int y = prerequisite[1];
-
-            List<Integer> preList = graph.getOrDefault(y, new ArrayList<>());
-            preList.add(prerequisite[0]);
-            graph.put(y, preList);
+        int[] inDegree = new int[numCourses];
+        List<List<Integer>> graph = new ArrayList<>();
+        for (int i = 0; i < numCourses; i++) {
+            graph.add(new ArrayList<>());
         }
 
-        boolean[] seen = new boolean[numCourses];
-        boolean[] finished = new boolean[numCourses];
+        for (int[] prerequisite : prerequisites) {
+            graph.get(prerequisite[1]).add(prerequisite[0]);
+            inDegree[prerequisite[0]]++;
+        }
 
-        List<Integer> result = new ArrayList<>();
+        List<Integer> answer = new ArrayList<>();
+        Queue<Integer> sort = new LinkedList<>();
 
         for (int i = 0; i < numCourses; i++) {
-            if (!dfs(graph, seen, finished, result, i)) {
-                return new int[0];
+            if (inDegree[i] == 0) {
+                sort.add(i);
             }
         }
 
-        return result.stream().mapToInt(e -> e).toArray();
-    }
-
-    private boolean dfs(HashMap<Integer, List<Integer>> graph, boolean[] seen, boolean[] finished, List<Integer> result, int curr) {
-        if (finished[curr]) {
-            return true;
-        }
-
-        if (seen[curr]) {
-            return false;
-        }
-
-        if (!graph.containsKey(curr)) {
-            result.add(curr);
-            finished[curr] = true;
-            return true;
-        }
-
-        seen[curr] = true;
-        for (int nei : graph.get(curr)) {
-            if (!dfs(graph, seen, finished, result, nei)) {
-                return false;
+        while (!sort.isEmpty()) {
+            int next = sort.poll();
+            answer.add(next);
+            for (int child : graph.get(next)) {
+                inDegree[child]--;
+                if (inDegree[child] == 0) {
+                    sort.add(child);
+                }
             }
         }
 
-        finished[curr] = true;
-        result.add(0, curr);
-        return true;
+        return answer.size() == numCourses ? answer.stream().mapToInt(i -> i).toArray() : new int[0];
     }
 }

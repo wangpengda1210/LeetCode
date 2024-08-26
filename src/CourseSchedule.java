@@ -1,51 +1,37 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class CourseSchedule {
     public boolean canFinish(int numCourses, int[][] prerequisites) {
-        HashMap<Integer, List<Integer>> graph = new HashMap<>();
-        for (int[] prerequisite : prerequisites) {
-            int y = prerequisite[1];
-
-            List<Integer> preList = graph.getOrDefault(y, new ArrayList<>());
-            preList.add(prerequisite[0]);
-            graph.put(y, preList);
-        }
-
-        boolean[] seen = new boolean[numCourses];
-        boolean[] finished = new boolean[numCourses];
-
+        int[] inDegree = new int[numCourses];
+        List<List<Integer>> graph = new ArrayList<>();
         for (int i = 0; i < numCourses; i++) {
-            if (!dfs(graph, seen, finished, i)) {
-                return false;
+            graph.add(new ArrayList<>());
+        }
+
+        for (int[] prerequisite : prerequisites) {
+            graph.get(prerequisite[1]).add(prerequisite[0]);
+            inDegree[prerequisite[0]]++;
+        }
+
+        Queue<Integer> sort = new LinkedList<>();
+        for (int i = 0; i < numCourses; i++) {
+            if (inDegree[i] == 0) {
+                sort.add(i);
             }
         }
 
-        return true;
-    }
-
-    private boolean dfs(HashMap<Integer, List<Integer>> graph, boolean[] seen, boolean[] finished, int curr) {
-        if (finished[curr]) {
-            return true;
-        }
-
-        if (seen[curr]) {
-            return false;
-        }
-
-        if (!graph.containsKey(curr)) {
-            return true;
-        }
-
-        seen[curr] = true;
-        for (int nei : graph.get(curr)) {
-            if (!dfs(graph, seen, finished, nei)) {
-                return false;
+        int count = 0;
+        while (!sort.isEmpty()) {
+            int next = sort.poll();
+            count++;
+            for (int parent : graph.get(next)) {
+                inDegree[parent]--;
+                if (inDegree[parent] == 0) {
+                    sort.add(parent);
+                }
             }
         }
 
-        finished[curr] = true;
-        return true;
+        return count == numCourses;
     }
 }
